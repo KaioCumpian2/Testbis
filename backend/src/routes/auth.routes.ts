@@ -12,6 +12,21 @@ router.post('/register', async (req, res, next) => {
     }
 });
 
+router.post('/register-saas', async (req, res, next) => {
+    try {
+        const { organizationName, name, email, password } = req.body;
+        if (!organizationName || !name || !email || !password) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+        // Import dynamically if needed to avoid circular deps, or just use the imported service
+        const { registerTenantAndAdmin } = await import('../services/auth.service');
+        const result = await registerTenantAndAdmin(req.body);
+        res.status(201).json(result);
+    } catch (error: any) {
+        next(error);
+    }
+});
+
 router.post('/login', async (req, res, next) => {
     try {
         const result = await loginUser(req.body);

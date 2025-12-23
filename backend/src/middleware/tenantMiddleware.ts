@@ -13,8 +13,13 @@ declare global {
 }
 
 export const ensureTenantContext = (req: Request, res: Response, next: NextFunction) => {
+    // 0. Allow Preflight OPTIONS
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+
     // 1. Extract tenantId from the authenticated user (attached by authenticateJWT)
-    const tenantId = req.user?.tenantId;
+    const tenantId = (req as any).user?.tenantId;
 
     if (!tenantId) {
         return res.status(401).json({ error: 'Unauthorized: No tenant context found' });

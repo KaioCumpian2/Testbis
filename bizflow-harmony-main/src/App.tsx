@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { EstablishmentProvider } from "@/contexts/EstablishmentContext";
 import Index from "./pages/Index";
+import Register from "./pages/auth/Register";
+import Login from "./pages/auth/Login";
+import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import NotFound from "./pages/NotFound";
 
 // Layouts
@@ -36,14 +39,16 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <EstablishmentProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <EstablishmentProvider>
             <Routes>
-              {/* SaaS Marketing Landing Page */}
+              {/* SaaS Marketing Landing Page - No Tenant Context needed, or handles null */}
               <Route path="/" element={<Index />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
 
               {/* Client Routes - Dynamic by Tenant Slug */}
               <Route path="/s/:slug" element={<ClientLayout />}>
@@ -68,12 +73,15 @@ const App = () => (
                 <Route path="notifications" element={<AdminNotifications />} />
               </Route>
 
+              {/* Employee Routes */}
+              <Route path="/employee" element={<EmployeeDashboard />} />
+
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </EstablishmentProvider>
+          </EstablishmentProvider>
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

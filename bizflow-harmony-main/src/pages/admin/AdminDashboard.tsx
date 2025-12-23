@@ -1,28 +1,94 @@
-import { Calendar, DollarSign, Users, TrendingUp, Clock, CheckCircle, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar, DollarSign, TrendingUp, Clock, CheckCircle, Star, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { appointments, services, professionals, reviews } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { getFinancialSummary, getTodayAppointments, getPendingPayments, updateAppointmentStatus } from '@/lib/api';
 
 export default function AdminDashboard() {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    revenue: 0,
+    todayCount: 0,
+    pendingCount: 0,
+    avgRating: 5.0
+  });
 
-  // KPIs
-  const totalRevenue = appointments
-    .filter(a => a.status === 'completed')
-    .reduce((sum, a) => sum + a.price, 0);
+  const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
+  const [pendingPayments, setPendingPayments] = useState<any[]>([]);
 
-  const todayAppointments = appointments.filter(a => a.date === '2024-01-15');
-  const pendingPayments = appointments.filter(a => a.status === 'awaiting_validation');
-  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const loadData = async () => {
+    try {
+      console.log('🔵 Dashboard: Starting data load...');
+      setIsLoading(true);
+      const [finance, today, pending] = await Promise.all([
+        getFinancialSummary().catch((err) => {
+          console.warn('⚠️ Finance API failed:', err);
+          return { totalRevenue: 0 };
+        }),
+        getTodayAppointments().catch((err) => {
+          console.warn('⚠️ Today Appointments API failed:', err);
+          return [];
+        }),
+        getPendingPayments().catch((err) => {
+          console.warn('⚠️ Pending Payments API failed:', err);
+          return [];
+        })
+      ]);
 
-  const handleQuickAction = (action: string, id: string) => {
-    toast.success(`Ação "${action}" realizada para agendamento #${id}`);
+      console.log('✅ Dashboard: Data loaded successfully', { finance, today, pending });
+
+      setStats({
+        revenue: finance.totalRevenue || 0,
+        todayCount: today.length,
+        pendingCount: pending.length,
+        avgRating: 4.8 // Mocked for now until review API is ready
+      });
+
+      setTodayAppointments(today);
+      setPendingPayments(pending);
+
+    } catch (error) {
+      console.error('❌ Dashboard: Error loading dashboard:', error);
+      toast.error('Erro ao carregar dados do dashboard');
+    } finally {
+      console.log('🏁 Dashboard: Load complete, setting isLoading=false');
+      setIsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    console.log('🚀 Dashboard: Component mounted, calling loadData()');
+    loadData();
+  }, []);
+
+  const handleQuickAction = async (action: 'confirm' | 'reject', id: string) => {
+    try {
+      const newStatus = action === 'confirm' ? 'confirmed' : 'cancelled'; // or 'created' logic
+      // Actually pending payment usually acts on 'confirmed' or 'rejected'
+      // If action is 'aprovar' (approve payment), status -> confirmed
+
+      const statusToSend = action === 'confirm' ? 'confirmed' : 'cancelled';
+
+      await updateAppointmentStatus(id, statusToSend);
+      toast.success('Status atualizado com sucesso');
+      loadData(); // Reload data
+    } catch (error) {
+      toast.error('Erro ao atualizar status');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-20">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -35,8 +101,8 @@ export default function AdminDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Receita (mês)</p>
-                <p className="text-2xl font-bold">R$ {totalRevenue.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Receita (Total)</p>
+                <p className="text-2xl font-bold">R$ {Number(stats.revenue || 0).toFixed(2)}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-primary" />
@@ -50,7 +116,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Agendamentos hoje</p>
-                <p className="text-2xl font-bold">{todayAppointments.length}</p>
+                <p className="text-2xl font-bold">{stats.todayCount}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-primary" />
@@ -64,7 +130,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pagamentos pendentes</p>
-                <p className="text-2xl font-bold">{pendingPayments.length}</p>
+                <p className="text-2xl font-bold text-amber-600">{stats.pendingCount}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
                 <Clock className="w-6 h-6 text-amber-600" />
@@ -79,7 +145,7 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm text-muted-foreground">Avaliação média</p>
                 <div className="flex items-center gap-1">
-                  <p className="text-2xl font-bold">{avgRating.toFixed(1)}</p>
+                  <p className="text-2xl font-bold">{stats.avgRating.toFixed(1)}</p>
                   <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                 </div>
               </div>
@@ -126,7 +192,7 @@ export default function AdminDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleQuickAction('confirmar', apt.id)}
+                        onClick={() => handleQuickAction('confirm', apt.id)}
                       >
                         <CheckCircle className="w-4 h-4" />
                       </Button>
@@ -159,19 +225,19 @@ export default function AdminDashboard() {
                     <p className="text-sm text-muted-foreground">{apt.serviceName}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-primary">R$ {apt.price.toFixed(2)}</p>
+                    <p className="font-bold text-primary">R$ {apt.price?.toFixed(2) || '0.00'}</p>
                     <div className="flex gap-1 mt-1">
                       <Button
                         size="sm"
                         variant="default"
-                        onClick={() => handleQuickAction('aprovar', apt.id)}
+                        onClick={() => handleQuickAction('confirm', apt.id)}
                       >
                         Aprovar
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleQuickAction('rejeitar', apt.id)}
+                        onClick={() => handleQuickAction('reject', apt.id)}
                       >
                         Rejeitar
                       </Button>
@@ -180,34 +246,6 @@ export default function AdminDashboard() {
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-primary">{services.length}</p>
-            <p className="text-sm text-muted-foreground">Serviços</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-primary">{professionals.length}</p>
-            <p className="text-sm text-muted-foreground">Profissionais</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-primary">{appointments.length}</p>
-            <p className="text-sm text-muted-foreground">Total Agendamentos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-primary">{reviews.length}</p>
-            <p className="text-sm text-muted-foreground">Avaliações</p>
           </CardContent>
         </Card>
       </div>

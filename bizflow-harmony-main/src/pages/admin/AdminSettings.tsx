@@ -15,7 +15,8 @@ export default function AdminSettings() {
     pixKey, setPixKey,
     logo, setLogo,
     portfolioImages, setPortfolioImages,
-    timeSlots, setTimeSlots
+    timeSlots, setTimeSlots,
+    updateSettings // Use the new function
   } = useEstablishment();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,13 +31,39 @@ export default function AdminSettings() {
   const [newImageTitle, setNewImageTitle] = useState('');
   const [newTimeSlot, setNewTimeSlot] = useState('');
 
-  const handleSave = () => {
-    setName(formData.name);
-    setPixKey(formData.pixKey);
-    setThemeColor(formData.themeColor);
-    toast.success('Configuracoes salvas!', {
-      description: 'As alteracoes foram aplicadas.'
-    });
+  const handleSave = async () => {
+    try {
+      console.log('🔵 Iniciando salvamento...', {
+        publicName: formData.name,
+        pixKey: formData.pixKey,
+        themeColor: formData.themeColor,
+        logoUrl: logo ? 'Logo presente (base64)' : 'Sem logo'
+      });
+
+      await updateSettings({
+        publicName: formData.name,
+        pixKey: formData.pixKey,
+        themeColor: formData.themeColor,
+        logoUrl: logo
+      });
+
+      console.log('✅ Salvamento bem-sucedido!');
+
+      // Also update local theme immediately for feedback
+      setThemeColor(formData.themeColor);
+
+      toast.success('Configurações salvas!', {
+        description: 'As alterações foram aplicadas.'
+      });
+    } catch (error: any) {
+      console.error('❌ ERRO AO SALVAR:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error('Erro ao salvar: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

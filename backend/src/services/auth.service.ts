@@ -45,6 +45,109 @@ export const registerUser = async (data: any) => {
     return userWithoutPassword;
 };
 
+export const registerTenantAndAdmin = async (data: any) => {
+    const { organizationName, name, email, password } = data;
+
+    // Generate slug from organization name
+    const slug = organizationName
+        .toLowerCase()
+        .normalize('NFD') // decompose accents
+        .replace(/[\u0300-\u036f]/g, '') // remove accents
+        .replace(/[^a-z0-9]+/g, '-') // non-alphanumeric to dash
+        .replace(/^-+|-+$/g, ''); // remove leading/trailing dashes
+
+    // Check if slug exists
+    const existingTenant = await prismaClient.tenant.findUnique({
+        where: { slug }
+    });
+
+    if (existingTenant) {
+        throw new Error('Organization name already taken (slug exists)');
+    }
+
+    // Check if user email exists (globally)
+    const existingUser = await prismaClient.user.findUnique({
+        where: { email }
+    });
+
+    if (existingUser) {
+        throw new Error('Email already registered');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Transaction to create Tenant + Config + User
+    const result = await prismaClient.$transaction(async (tx) => {
+        // 1. Create Tenant
+        const tenant = await tx.tenant.create({
+            data: {
+                name: organizationName,
+                slug,
+                // plan: 'FREE' // Schema doesn't support plan yet
+            }
+        });
+
+        // 2. Create Default Config
+        await tx.tenantConfig.create({
+            data: {
+                tenantId: tenant.id,
+                publicName: organizationName,
+                themeColor: '#8b5cf6', // Violet
+            }
+        });
+
+        // 3. Create Admin User
+        const user = await tx.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+                tenantId: tenant.id,
+                role: 'ADMIN'
+            }
+        });
+
+        // 4. Create Default Professional (The Admin themselves)
+        const professional = await tx.professional.create({
+            data: {
+                name: name,
+                // bio field removed as it doesn't exist in schema yet
+                tenantId: tenant.id
+                // userId removed as it doesn't exist in schema yet
+            }
+        });
+
+        // 5. Create Default Service
+        await tx.service.create({
+            data: {
+                name: 'Consultoria / Avaliação',
+                description: 'Serviço inicial de avaliação',
+                price: 0.00,
+                duration: 30,
+                tenantId: tenant.id
+            }
+        });
+
+        return { tenant, user };
+    });
+
+    // Generate token
+    const token = generateToken({
+        userId: result.user.id,
+        tenantId: result.tenant.id,
+        email: result.user.email,
+        role: result.user.role
+    });
+
+    const { password: _, ...userWithoutPassword } = result.user;
+
+    return {
+        user: userWithoutPassword,
+        tenant: result.tenant,
+        token
+    };
+};
+
 export const loginUser = async (data: any) => {
     const { email, password } = data;
 

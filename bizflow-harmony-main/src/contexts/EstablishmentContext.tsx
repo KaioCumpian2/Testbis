@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { establishment as mockEstablishment } from '@/data/mockData';
 import { PortfolioImage, TimeSlot } from '@/types';
 import defaultLogo from '@/assets/logo.png';
@@ -19,9 +20,10 @@ interface EstablishmentContextType {
   setTimeSlots: (slots: TimeSlot[]) => void;
   workingHours: { open: string; close: string };
   isLoading: boolean;
+  updateSettings: (data: any) => Promise<void>;
 }
 
-const EstablishmentContext = createContext<EstablishmentContextType | undefined>(undefined);
+export const EstablishmentContext = createContext<EstablishmentContextType | undefined>(undefined);
 
 export function EstablishmentProvider({ children }: { children: ReactNode }) {
   const [slug, setSlug] = useState<string | null>(null);
@@ -37,35 +39,78 @@ export function EstablishmentProvider({ children }: { children: ReactNode }) {
   const [workingHours] = useState(mockEstablishment.workingHours);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper to sync with API and Context
+  const updateSettings = async (data: any) => {
+    try {
+      const { updateTenantConfig } = await import('@/lib/api');
+      const updatedConfig = await updateTenantConfig(data);
+
+      if (updatedConfig) {
+        if (updatedConfig.publicName) setName(updatedConfig.publicName);
+        if (updatedConfig.pixKey) setPixKey(updatedConfig.pixKey);
+        if (updatedConfig.logoUrl) {
+          setLogo(updatedConfig.logoUrl);
+          localStorage.setItem('establishmentLogo', updatedConfig.logoUrl);
+        }
+        // Note: ThemeColor is handled by ThemeContext, but we can return it or let the caller handle it.
+        // Ideally EstablishmentContext should also know about themeColor but it's split.
+      }
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      throw error;
+    }
+  };
+
+  const location = useLocation();
+
   useEffect(() => {
-    const path = window.location.pathname;
-    const match = path.match(/\/s\/([^/]+)/);
+    // Attempt to extract slug from URL path: /s/:slug/...
+    const match = location.pathname.match(/\/s\/([^/]+)/);
+
+    // Check if we are in a tenant context
     if (match && match[1]) {
       const detectedSlug = match[1];
-      setSlug(detectedSlug);
 
-      const loadEstablishment = async () => {
-        setIsLoading(true);
-        try {
-          const data = await getEstablishmentBySlug(detectedSlug);
-          if (data) {
-            setTenantId(data.id);
-            setName(data.config?.publicName || data.name);
-            setPixKey(data.config?.pixKey || '');
-            if (data.config?.logoUrl) setLogo(data.config.logoUrl);
-            // Additional mapping can be done here for services, professionals etc. if needed globally
-            console.log('Real establishment data loaded:', data.name);
+      // Only reload if slug changed to avoid unnecessary fetches
+      if (slug !== detectedSlug) {
+        setSlug(detectedSlug);
+
+        const loadEstablishment = async () => {
+          setIsLoading(true);
+          try {
+            const data = await getEstablishmentBySlug(detectedSlug);
+            if (data) {
+              setTenantId(data.id);
+              setName(data.config?.publicName || data.name);
+
+              // Update Pix Key if available
+              if (data.config?.pixKey) setPixKey(data.config.pixKey);
+
+              // Update Logo if available
+              if (data.config?.logoUrl) {
+                setLogo(data.config.logoUrl);
+                // Don't persist tenant logo to global localStorage to avoid confusion between tenants
+                // localStorage.setItem('establishmentLogo', data.config.logoUrl); 
+              }
+
+              console.log('Context updated for tenant:', data.name);
+            }
+          } catch (error) {
+            console.error('Failed to load establishment context:', error);
+            // Optional: Redirect to 404 or show error toast
+          } finally {
+            setIsLoading(false);
           }
-        } catch (error) {
-          console.error('Error loading establishment from API:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
+        };
 
-      loadEstablishment();
+        loadEstablishment();
+      }
+    } else {
+      // Not in a tenant route (e.g. Landing Page or Admin Root)
+      // Reset if needed, or keep generic defaults
+      // setSlug(null); 
     }
-  }, []);
+  }, [location.pathname]);
 
   const handleSetLogo = (newLogo: string) => {
     setLogo(newLogo);
@@ -87,7 +132,8 @@ export function EstablishmentProvider({ children }: { children: ReactNode }) {
       timeSlots,
       setTimeSlots,
       workingHours,
-      isLoading
+      isLoading,
+      updateSettings
     }}>
       {children}
     </EstablishmentContext.Provider>

@@ -97,6 +97,7 @@ enum Role {
   USER
   ADMIN
   SUPERADMIN
+  EMPLOYEE
 }
 
 enum AppointmentStatus {

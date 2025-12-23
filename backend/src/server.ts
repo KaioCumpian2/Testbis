@@ -32,21 +32,39 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 
+// Debug Middleware: Log all requests
+app.use((req, res, next) => {
+    console.log(`[DEBUG] ${req.method} ${req.url}`);
+    // Check if auth header exists
+    if (req.headers.authorization) console.log('[DEBUG] Auth Header Present');
+    next();
+});
+
 // Serve Uploads Static Directory
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Public Routes
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api', publicRoutes); // Public API routes (bypass auth)
-app.use('/api', aiConfigRoutes); // AI Agent public config (bypass auth for /api/public/*)
+// Explicitly mount Auth Routes BEFORE any protected catch-all
+app.use('/api/auth', (req, res, next) => {
+    console.log('[DEBUG] Entering Auth Routes Mount');
+    next();
+}, authRoutes);
+
+app.use('/api', (req, res, next) => {
+    console.log('[DEBUG] Entering Public/Catch-all Mount');
+    next();
+}, publicRoutes); // Public API routes (bypass auth)
+
+app.use('/api', aiConfigRoutes); // AI Agent public config
 
 // Protected Routes (Tenant Context Required)
-// Apply authenticateJWT BEFORE ensureTenantContext because ensureTenantContext needs req.user
-app.use('/api', authenticateJWT, ensureTenantContext);
+app.use('/api', (req, res, next) => {
+    console.log('[DEBUG] Entering Protected Block');
+    next();
+}, authenticateJWT, ensureTenantContext);
 app.use('/api/users', userRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/professionals', professionalsRoutes);

@@ -2,6 +2,17 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../services/jwt.service';
 
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+    // 0. Allow Preflight OPTIONS
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+
+    // 0.1 Explicitly allow Auth Routes (Fail-safe for routing issues)
+    // When mounted at /api, req.url for /api/auth/register-saas starts with /auth
+    if (req.path.startsWith('/auth/') || req.baseUrl.includes('/auth/')) {
+        return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (authHeader) {
