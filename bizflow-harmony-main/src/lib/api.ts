@@ -56,6 +56,11 @@ export const getTodayAppointments = async () => {
     return response.data;
 };
 
+export const getAppointmentsByDate = async (date: string) => {
+    const response = await api.get(`/appointments?date=${date}`);
+    return response.data;
+};
+
 export const getPendingPayments = async () => {
     const response = await api.get('/appointments?status=awaiting_validation');
     return response.data;
@@ -68,5 +73,47 @@ export const updateAppointmentStatus = async (id: string, status: string) => {
 
 export const updateTenantConfig = async (data: any) => {
     const response = await api.put('/config', data);
+    return response.data;
+};
+
+// Services CRUD (Admin)
+export const getAdminServices = async () => {
+    const response = await api.get('/services');
+    return response.data;
+};
+
+export const createService = async (data: any) => {
+    const response = await api.post('/services', data);
+    return response.data;
+};
+
+export const updateService = async (id: string, data: any) => {
+    const response = await api.put(`/services/${id}`, data);
+    return response.data;
+};
+
+export const deleteService = async (id: string) => {
+    const response = await api.delete(`/services/${id}`);
+    return response.data;
+};
+
+// Professionals CRUD (Admin)
+export const getAdminProfessionals = async () => {
+    const response = await api.get('/professionals');
+    return response.data;
+};
+
+export const createProfessional = async (data: any) => {
+    const response = await api.post('/professionals', data);
+    return response.data;
+};
+
+export const updateProfessional = async (id: string, data: any) => {
+    const response = await api.put(`/professionals/${id}`, data);
+    return response.data;
+};
+
+export const deleteProfessional = async (id: string) => {
+    const response = await api.delete(`/professionals/${id}`);
     return response.data;
 };

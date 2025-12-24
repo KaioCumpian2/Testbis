@@ -45,6 +45,7 @@ model Service {
   description String?
   price     Decimal
   duration  Int      // in minutes
+  category  String?  // Category for grouping services
   tenantId  String
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
   createdAt DateTime @default(now())
