@@ -1,11 +1,22 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { MobileNav } from './MobileNav';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useEstablishment } from '@/contexts/EstablishmentContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import logo from '@/assets/logo.png';
 
 export function ClientLayout() {
-  const { name } = useEstablishment();
+  const { name, themeColor } = useEstablishment();
+  const { setThemeColor } = useTheme();
+
+  // Sync theme color with establishment color
+  useEffect(() => {
+    if (themeColor) {
+      console.log('[ClientLayout] Syncing theme color:', themeColor);
+      setThemeColor(themeColor);
+    }
+  }, [themeColor, setThemeColor]);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">

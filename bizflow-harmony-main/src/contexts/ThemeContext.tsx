@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { establishment as mockEstablishment } from '@/data/mockData';
 
 interface ThemeContextType {
   isDark: boolean;
@@ -18,12 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return false;
   });
 
-  const [themeColor, setThemeColor] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('themeColor') || mockEstablishment.themeColor;
-    }
-    return mockEstablishment.themeColor;
-  });
+  const [themeColor, setThemeColor] = useState('#8B5CF6'); // Default purple
 
   useEffect(() => {
     if (isDark) {
@@ -79,9 +73,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       // Create lighter accent version (increase lightness)
       const accentL = Math.min(hsl.l + 15, 95);
       document.documentElement.style.setProperty('--accent-foreground', `${hsl.h} ${hsl.s}% ${hsl.l}%`);
-
-      // Save to localStorage
-      localStorage.setItem('themeColor', themeColor);
     }
   }, [themeColor]);
 

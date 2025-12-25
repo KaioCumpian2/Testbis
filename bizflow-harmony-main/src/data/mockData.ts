@@ -17,19 +17,12 @@ export const establishment: Establishment = {
   name: 'Service Hub',
   logo: undefined,
   themeColor: '#8B5CF6',
-  pixKey: 'pix@servicehub.com.br',
-  portfolioImages: [
-    { id: 'p1', url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400', title: 'Corte Moderno', isActive: true },
-    { id: 'p2', url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', title: 'Coloração', isActive: true },
-    { id: 'p3', url: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=400', title: 'Manicure', isActive: true },
-    { id: 'p4', url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400', title: 'Massagem', isActive: true },
-    { id: 'p5', url: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', title: 'Tratamento Facial', isActive: true },
-    { id: 'p6', url: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', title: 'Spa', isActive: false },
-  ],
-  availableTimeSlots: generateTimeSlots(),
+  pixKey: '',
+  portfolioImages: [],
+  availableTimeSlots: [],
   workingHours: {
     open: '09:00',
-    close: '19:00'
+    close: '18:00'
   }
 };
 

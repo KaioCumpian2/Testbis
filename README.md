@@ -249,4 +249,18 @@ Este projeto é privado e proprietário.
 
 **Status do Projeto:** ✅ Produção Ready
 
-**Última Atualização:** Dezembro 2024
+**Última Atualização:** 25 de Dezembro de 2025
+
+## 📅 Últimas Atualizações (25/12/2025)
+
+### Manutenção e Correções
+1. **Testes E2E (ClientFlow)**
+   - Corrigido erro de tipagem no mock `EstablishmentContext` (adicionado `themeColor`).
+   - Atualizados seletores de texto nos testes para refletir mudanças na UI:
+     - Botão "Continuar" → **PRÓXIMO PASSO**
+     - Cabeçalho "Tudo pronto?" → **Tudo revisado?**
+     - Botão "Confirmar Agendamento" → **CONFIRMAR AGORA**
+
+2. **Ambiente de Desenvolvimento**
+   - Restaurado acesso ao ambiente local iniciando o servidor backend na porta 3000.
+   - Validação de isolamento do frontend/backend.

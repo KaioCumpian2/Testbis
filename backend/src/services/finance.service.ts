@@ -62,25 +62,24 @@ export const getDetailedReport = async (
         filter.professionalId = professionalId;
     }
 
-    const appointments = await prismaClient.appointment.findMany({
+    const appointments = await (prismaClient.appointment as any).findMany({
         where: filter,
         include: {
             service: true,
-            professional: true
-            // user relation might be tricky or optional, so we skip for now or fetch separately if needed
-            // For MVP, if 'user' is null in include but we have 'userId', we just show userId or 'Unknown'
+            professional: true,
+            user: { select: { name: true } }
         },
         orderBy: { date: 'desc' }
     });
 
     // Transform and Calculate Commission
-    const report = appointments.map(app => {
+    const report = appointments.map((app: any) => {
         const price = Number(app.service.price);
         const commissionRate = app.professional ? Number(app.professional.commissionRate) : 0;
         const commissionAmount = price * (commissionRate / 100);
 
         // Safety check for user name
-        const clientName = (app as any).userId || 'Unknown';
+        const clientName = app.user?.name || 'Cliente Avulso';
 
         return {
             date: app.date,

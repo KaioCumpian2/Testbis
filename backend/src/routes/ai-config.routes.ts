@@ -19,10 +19,21 @@ router.get('/public/agent-config', async (req, res, next) => {
     }
 });
 
+// Admin endpoint to fetch agent config
+router.get('/config/agent', async (req, res, next) => {
+    try {
+        const tenantId = (req.user as any).tenantId;
+        const config = await getAgentConfig(tenantId);
+        res.json(config);
+    } catch (error: any) {
+        next(error);
+    }
+});
+
 // Admin endpoint to update agent config (requires auth)
 router.put('/config/agent', async (req, res, next) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const tenantId = (req.user as any).tenantId;
 
         if (!tenantId) {
             return res.status(401).json({ error: 'Tenant context required' });

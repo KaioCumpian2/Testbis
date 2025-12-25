@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTenantConfig, updateTenantConfig } from '../services/config.service';
+import { getFullEstablishmentConfig, updateTenantConfig } from '../services/config.service';
 
 const router = Router();
 
@@ -7,7 +7,7 @@ const router = Router();
 router.get('/', async (req, res, next) => {
     try {
         const tenantId = req.user!.tenantId;
-        const config = await getTenantConfig(tenantId);
+        const config = await getFullEstablishmentConfig(tenantId);
         res.json(config);
     } catch (error: any) {
         next(error);

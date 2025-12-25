@@ -104,55 +104,55 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 240 5% 10%;
-    --foreground: 0 0% 98%;
+    --background: 240 5% 5%;
+    --foreground: 0 0% 100%;
 
-    --card: 240 3% 15%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 3% 10%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 5% 26%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 5% 15%;
+    --popover-foreground: 0 0% 100%;
 
     --primary: 255 91% 76%;
     --primary-foreground: 261 72% 22%;
 
-    --secondary: 240 3% 46%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 3% 30%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 3% 46%;
-    --muted-foreground: 0 0% 98%;
+    --muted: 240 3% 20%;
+    --muted-foreground: 0 0% 90%;
 
-    --accent: 273 86% 20%;
+    --accent: 273 86% 15%;
     --accent-foreground: 270 95% 75%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 85% 97%;
 
-    --border: 240 5% 33%;
-    --input: 240 5% 33%;
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
     --ring: 255 91% 76%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 0 0% 98%;
+    --sidebar-background: 240 5.9% 5%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 255 91% 76%;
     --sidebar-primary-foreground: 261 72% 22%;
     --sidebar-accent: 270 95% 75%;
     --sidebar-accent-foreground: 273 86% 20%;
-    --sidebar-border: 240 5% 33%;
+    --sidebar-border: 240 5% 20%;
     --sidebar-ring: 255 91% 76%;
     --chart-1: 252 94% 85%;
     --chart-2: 269 97% 85%;
     --chart-3: 229 93% 81%;
     --chart-4: 255 91% 76%;
-    --chart-5: 240 3% 46%;
-    --sidebar: 240 3% 15%;
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --chart-5: 240 3% 40%;
+    --sidebar: 240 3% 10%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.1);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 2px 4px 0px hsl(0 0% 0% / 0.3);
+    --shadow: 0 4px 6px 0px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 8px 12px 0px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 12px 20px 0px hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 20px 30px 0px hsl(0 0% 0% / 0.6);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.8);
   }
 }
 
@@ -199,12 +199,49 @@ All colors MUST be HSL.
   }
 
   .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px -4px hsl(var(--primary) / 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px hsl(var(--primary) / 0.3);
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 25px hsl(var(--primary) / 0.4);
+  }
+
+  /* Glassmorphism Refined for Visibility */
+  .glass {
+    background: rgba(255, 255, 255, 0.15);
+    /* Much more transparent */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.6);
+    /* Much darker for light text */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  /* Text Legibility Utilities */
+  .text-glow {
+    text-shadow: 0 0 15px hsl(var(--primary) / 0.5);
+  }
+
+  .text-shadow-sm {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Premium Gradients */
+  .bg-premium-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
   }
 }
 

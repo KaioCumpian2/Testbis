@@ -16,20 +16,14 @@ export const createNotification = async (data: {
     // If schema update is needed, we do it.
     // Let's verify schema first. If schema has no title, we put it in message or metadata.
 
-    // Checked schema before: Notification model has:
-    // id, userId, type, message, isRead, metadata, tenantId, createdAt
-    // NO TITLE in schema. So we should NOT pass title to prisma create.
-
-    const { title, ...prismaData } = data;
-    const finalMessage = title ? `${title}: ${data.message}` : data.message;
-
-    return prismaClient.notification.create({
+    return (prismaClient.notification as any).create({
         data: {
-            userId: prismaData.userId,
-            message: finalMessage, // Prepend title to message since schema lacks title
-            type: prismaData.type,
-            tenantId: prismaData.tenantId,
-            metadata: prismaData.metadata,
+            userId: data.userId,
+            title: data.title,
+            message: data.message,
+            type: data.type,
+            tenantId: data.tenantId,
+            metadata: data.metadata,
             isRead: false
         }
     });
@@ -88,4 +82,26 @@ export const runReminderJob = async () => {
 
     console.log(`[Job] Created ${sentCount} new notifications.`);
     return sentCount;
+};
+
+export const getUserNotifications = async (userId: string, tenantId: string) => {
+    return prismaClient.notification.findMany({
+        where: { userId, tenantId },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+    });
+};
+
+export const markNotificationAsRead = async (id: string, userId: string) => {
+    return prismaClient.notification.updateMany({
+        where: { id, userId },
+        data: { isRead: true }
+    });
+};
+
+export const markAllNotificationsAsRead = async (userId: string, tenantId: string) => {
+    return prismaClient.notification.updateMany({
+        where: { userId, tenantId, isRead: false },
+        data: { isRead: true }
+    });
 };

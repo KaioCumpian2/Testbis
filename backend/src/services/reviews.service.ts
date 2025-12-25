@@ -81,3 +81,33 @@ export const createReview = async (data: {
 
     return review;
 };
+
+export const getReviews = async (tenantId: string, filters?: { rating?: number; serviceId?: string }) => {
+    const where: any = { tenantId };
+
+    if (filters?.rating) {
+        where.rating = filters.rating;
+    }
+    if (filters?.serviceId) {
+        where.serviceId = filters.serviceId;
+    }
+
+    return await prismaClient.review.findMany({
+        where,
+        include: {
+            user: {
+                select: { name: true, email: true }
+            },
+            service: {
+                select: { name: true }
+            },
+            professional: {
+                select: { name: true }
+            },
+            appointment: {
+                select: { date: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+};

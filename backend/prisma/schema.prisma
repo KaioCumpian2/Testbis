@@ -8,90 +8,217 @@ datasource db {
 }
 
 model Tenant {
+  id              String                  @id @default(uuid())
+  name            String
+  slug            String                  @unique
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  rooms           Int?
+  appointments    Appointment[]
+  openingHours    EstablishmentSchedule[]
+  availableSlots  EstablishmentSlot[]
+  notifications   Notification[]
+  paymentProofs   PaymentProof[]
+  portfolioImages PortfolioImage[]
+  professionals   Professional[]
+  schedules       ProfessionalSchedule[]
+  recurrenceRules RecurrenceRule[]
+  reviews         Review[]
+  services        Service[]
+  config          TenantConfig?
+  users           User[]
+}
+
+model PortfolioImage {
   id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
+  url       String
+  title     String?
+  isActive  Boolean  @default(true)
+  tenantId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users     User[]
-  services  Service[]
-  professionals Professional[]
-  appointments Appointment[]
-  schedules    ProfessionalSchedule[]
-  paymentProofs PaymentProof[]
-  config        TenantConfig?
-  reviews        Review[]
-  notifications  Notification[]
-  recurrenceRules RecurrenceRule[]
+  isPublic  Boolean  @default(true)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model EstablishmentSchedule {
+  id        String  @id @default(uuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  isActive  Boolean @default(true)
+  tenantId  String
+  tenant    Tenant  @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, dayOfWeek])
+}
+
+model EstablishmentSlot {
+  id       String  @id @default(uuid())
+  time     String
+  isActive Boolean @default(true)
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, time])
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(USER)
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reviews   Review[]
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String
+  role          Role           @default(USER)
+  tenantId      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  appointments  Appointment[]
   notifications Notification[]
+  reviews       Review[]
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
 }
 
 model Service {
-  id        String   @id @default(uuid())
-  name      String
-  description String?
-  price     Decimal
-  duration  Int      // in minutes
-  category  String?  // Category for grouping services
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  price        Decimal
+  duration     Int
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  category     String?
   appointments Appointment[]
   reviews      Review[]
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
 }
 
 model Professional {
-  id        String        @id @default(uuid())
-  name      String
-  tenantId  String
-  tenant    Tenant        @relation(fields: [tenantId], references: [id])
-  appointments Appointment[]
-  schedules ProfessionalSchedule[]
-  reviews   Review[]
+  id              String                 @id @default(uuid())
+  name            String
+  tenantId        String
   profileImageUrl String?
-  averageRating Float? @default(0)
-  commissionRate Decimal      @default(0.0)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  averageRating   Float?                 @default(0)
+  commissionRate  Decimal                @default(0.0)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  role            String?
+  services        String[]               @default([])
+  appointments    Appointment[]
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
+  schedules       ProfessionalSchedule[]
+  reviews         Review[]
 }
 
 model Appointment {
-  id             String            @id @default(uuid())
-  date           DateTime
-  status         AppointmentStatus @default(SCHEDULED)
-  tenantId       String
-  tenant         Tenant            @relation(fields: [tenantId], references: [id])
-  serviceId      String
-  service        Service           @relation(fields: [serviceId], references: [id])
-  professionalId String?
-  professional   Professional?     @relation(fields: [professionalId], references: [id])
-  userId         String?           // Client
-  paymentStatus  PaymentStatus     @default(PENDING_PROOF_UPLOAD)
-  paymentProof   PaymentProof?
-  review         Review?
+  id               String            @id @default(uuid())
+  date             DateTime
+  status           AppointmentStatus @default(SCHEDULED)
+  tenantId         String
+  serviceId        String
+  professionalId   String?
+  userId           String?
+  paymentStatus    PaymentStatus     @default(PENDING_PROOF_UPLOAD)
   recurrenceRuleId String?
-  recurrenceRule RecurrenceRule? @relation(fields: [recurrenceRuleId], references: [id])
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  professional     Professional?     @relation(fields: [professionalId], references: [id])
+  recurrenceRule   RecurrenceRule?   @relation(fields: [recurrenceRuleId], references: [id])
+  service          Service           @relation(fields: [serviceId], references: [id])
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  user             User?             @relation(fields: [userId], references: [id])
+  paymentProof     PaymentProof?
+  review           Review?
 
   @@index([tenantId, date])
   @@index([professionalId, date])
   @@index([userId])
   @@index([recurrenceRuleId])
+}
+
+model PaymentProof {
+  id            String      @id @default(uuid())
+  url           String
+  uploadedAt    DateTime    @default(now())
+  appointmentId String      @unique
+  tenantId      String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+}
+
+model Review {
+  id             String       @id @default(uuid())
+  rating         Int
+  comment        String?
+  appointmentId  String       @unique
+  serviceId      String
+  professionalId String
+  userId         String?
+  tenantId       String
+  createdAt      DateTime     @default(now())
+  appointment    Appointment  @relation(fields: [appointmentId], references: [id])
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  service        Service      @relation(fields: [serviceId], references: [id])
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@index([professionalId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  tenantId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  title     String?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+}
+
+model RecurrenceRule {
+  id           String        @id @default(uuid())
+  frequency    String
+  interval     Int           @default(1)
+  count        Int?
+  endDate      DateTime?
+  dayOfWeek    Int?
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+}
+
+model TenantConfig {
+  id               String  @id @default(uuid())
+  tenantId         String  @unique
+  publicName       String?
+  themeColor       String? @default("#3B82F6")
+  logoUrl          String?
+  pixKey           String?
+  agentName        String? @default("Assistente FlowMaster")
+  agentGreeting    String? @default("Olá! Sou o assistente virtual. Como posso ajudar?")
+  agentPersonality String?
+  agentTone        String? @default("friendly")
+  tenant           Tenant  @relation(fields: [tenantId], references: [id])
+}
+
+model ProfessionalSchedule {
+  id             String       @id @default(uuid())
+  professionalId String
+  dayOfWeek      Int
+  startTime      String
+  endTime        String
+  tenantId       String
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+
+  @@unique([professionalId, dayOfWeek])
 }
 
 enum Role {
@@ -105,6 +232,7 @@ enum AppointmentStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+  CONFIRMED
 }
 
 enum PaymentStatus {
@@ -112,90 +240,4 @@ enum PaymentStatus {
   PENDING_APPROVAL
   PAID
   REJECTED
-}
-
-model PaymentProof {
-  id            String      @id @default(uuid())
-  url           String
-  uploadedAt    DateTime    @default(now())
-  appointmentId String      @unique
-  appointment   Appointment @relation(fields: [appointmentId], references: [id])
-  tenantId      String
-  tenant        Tenant      @relation(fields: [tenantId], references: [id])
-}
-
-model Review {
-  id             String       @id @default(uuid())
-  rating         Int
-  comment        String?
-  appointmentId  String       @unique
-  appointment    Appointment  @relation(fields: [appointmentId], references: [id])
-  serviceId      String
-  service        Service      @relation(fields: [serviceId], references: [id])
-  professionalId String
-  professional   Professional @relation(fields: [professionalId], references: [id])
-  userId         String?
-  user           User?        @relation(fields: [userId], references: [id])
-  tenantId       String
-  tenant         Tenant       @relation(fields: [tenantId], references: [id])
-  createdAt      DateTime     @default(now())
-
-  @@index([professionalId])
-}
-
-model Notification {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  message   String
-  type      String   // 'REMINDER', 'SYSTEM', etc.
-  isRead    Boolean  @default(false)
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  @@index([userId, isRead])
-}
-
-model RecurrenceRule {
-  id            String        @id @default(uuid())
-  frequency     String        // 'WEEKLY', 'BIWEEKLY', 'MONTHLY'
-  interval      Int           @default(1)
-  count         Int?
-  endDate       DateTime?
-  dayOfWeek     Int?
-  tenantId      String
-  tenant        Tenant        @relation(fields: [tenantId], references: [id])
-  appointments  Appointment[]
-  createdAt     DateTime      @default(now())
-}
-
-model TenantConfig {
-  id         String  @id @default(uuid())
-  tenantId   String  @unique
-  tenant     Tenant  @relation(fields: [tenantId], references: [id])
-  publicName String?
-  themeColor String? @default("#3B82F6")
-  logoUrl    String?
-  pixKey     String?
-  
-  // AI Agent Customization
-  agentName         String?  @default("Assistente FlowMaster")
-  agentGreeting     String?  @default("Olá! Sou o assistente virtual. Como posso ajudar?")
-  agentPersonality  String?  // Full system instruction override
-  agentTone         String?  @default("friendly") // friendly, formal, casual
-}
-
-model ProfessionalSchedule {
-  id             String       @id @default(uuid())
-  professionalId String
-  professional   Professional @relation(fields: [professionalId], references: [id])
-  dayOfWeek      Int          // 0=Domingo, 1=Segunda, ..., 6=Sábado
-  startTime      String       // "09:00"
-  endTime        String       // "18:00"
-  tenantId       String
-  tenant         Tenant       @relation(fields: [tenantId], references: [id])
-
-  @@unique([professionalId, dayOfWeek])
 }

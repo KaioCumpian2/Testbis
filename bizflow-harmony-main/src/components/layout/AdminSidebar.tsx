@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   LayoutDashboard,
@@ -12,7 +12,9 @@ import {
   Bot,
   Menu,
   X,
-  Image
+  Image,
+  ExternalLink,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,15 +26,15 @@ const navGroups = [
   {
     label: 'Principal',
     items: [
-      { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
-      { to: '/admin/agenda', icon: Calendar, label: 'Agenda' },
+      { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true, tourKey: 'dashboard' },
+      { to: '/admin/agenda', icon: Calendar, label: 'Agenda', tourKey: 'agenda' },
     ]
   },
   {
     label: 'Gestao',
     items: [
-      { to: '/admin/services', icon: Scissors, label: 'Servicos' },
-      { to: '/admin/professionals', icon: Users, label: 'Profissionais' },
+      { to: '/admin/services', icon: Scissors, label: 'Servicos', tourKey: 'services' },
+      { to: '/admin/professionals', icon: Users, label: 'Profissionais', tourKey: 'professionals' },
     ]
   },
   {
@@ -45,7 +47,7 @@ const navGroups = [
   {
     label: 'Financeiro',
     items: [
-      { to: '/admin/payments', icon: CreditCard, label: 'Pagamentos' },
+      { to: '/admin/payments', icon: CreditCard, label: 'Pagamentos', tourKey: 'payments' },
       { to: '/admin/reports', icon: BarChart3, label: 'Relatorios' },
     ]
   },
@@ -58,15 +60,22 @@ const navGroups = [
   {
     label: 'Configuracoes',
     items: [
-      { to: '/admin/settings', icon: Settings, label: 'CMS' },
+      { to: '/admin/settings', icon: Settings, label: 'CMS', tourKey: 'settings' },
     ]
   }
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { logo, name, slug } = useEstablishment();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
 
   return (
     <>
@@ -106,7 +115,7 @@ export function AdminSidebar() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-sidebar-foreground">
-                  {name || 'Service Hub'}
+                  {name || 'FlowMaster'}
                 </h1>
                 <p className="text-xs text-muted-foreground">Painel Admin</p>
               </div>
@@ -130,6 +139,7 @@ export function AdminSidebar() {
                       <NavLink
                         key={item.to}
                         to={item.to}
+                        data-tour={item.tourKey}
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
@@ -154,15 +164,30 @@ export function AdminSidebar() {
               <span className="text-sm text-muted-foreground">Tema</span>
               <ThemeToggle />
             </div>
-            <NavLink
-              to={`/s/${slug || 'exemplo'}`}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start gap-2 h-10 border-sidebar-border hover:bg-sidebar-accent"
+              asChild
             >
-              Ver como cliente
-            </NavLink>
+              <a href={`/s/${slug || 'exemplo'}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 text-primary" />
+                <span className="text-xs font-semibold">Ver Vitrine Pública</span>
+              </a>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 h-10 mt-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-xs font-semibold">Sair do Sistema</span>
+            </Button>
           </div>
         </div>
-      </aside>
+      </aside >
     </>
   );
 }

@@ -22,9 +22,10 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-              <span className="font-bold text-white text-lg">S</span>
+              <span className="font-bold text-white text-lg">F</span>
             </div>
-            <span className="font-bold text-lg tracking-tight">Service Hub</span>
+            <span className="font-bold text-lg tracking-tight">FlowMaster</span>
+            <span className="px-2 py-0.5 rounded text-[10px] bg-violet-500/20 text-violet-400 font-bold border border-violet-500/30">BETA</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
@@ -59,7 +60,7 @@ const Index = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            A plataforma completa para barbearias, clínicas e salões. Agendamento online, gestão financeira e fidelização de clientes em um só lugar.
+            A plataforma completa para seu negócio. Crie sua vitrine, gerencie sua agenda e aceite pagamentos Pix. Tudo com seu link personalizado para marketing.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -138,9 +139,9 @@ const Index = () => {
                 <div className="w-12 h-12 rounded-xl bg-sky-600/20 flex items-center justify-center mb-4">
                   <Store className="w-6 h-6 text-sky-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Site Personalizado</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Seu Link, Sua Marca</h3>
                 <p className="text-slate-400">
-                  Sua marca em destaque. Personalize cores, logo e serviços. Seu negócio, sua identidade.
+                  Sua marca em destaque com link personalizado. Customize cores, logo e serviços para criar uma experiência única para seus clientes.
                 </p>
               </CardContent>
             </Card>
@@ -185,10 +186,10 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-gradient-to-br from-violet-600 to-indigo-600" />
-            <span className="font-bold text-slate-200">Service Hub</span>
+            <span className="font-bold text-slate-200">FlowMaster</span>
           </div>
           <p className="text-slate-500 text-sm">
-            © 2024 Service Hub. Feito com ❤️ para empreendedores.
+            © 2024 FlowMaster. Plataforma SaaS de agendamentos.
           </p>
           <div className="flex gap-6 text-sm text-slate-400">
             <a href="#" className="hover:text-white transition-colors">Termos</a>

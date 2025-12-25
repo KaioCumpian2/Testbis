@@ -75,12 +75,43 @@ export const createAppointment = async (data: any, tenantId: string) => {
     });
 };
 
-export const getAppointments = async (tenantId: string) => {
+export const getAppointments = async (tenantId: string, filters?: { date?: string, status?: string, paymentStatus?: string, userId?: string }) => {
+    const where: any = { tenantId };
+
+    if (filters?.userId) {
+        where.userId = filters.userId;
+    }
+
+    if (filters?.date) {
+        const startOfDay = new Date(filters.date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(filters.date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        where.date = {
+            gte: startOfDay,
+            lte: endOfDay
+        };
+    }
+
+    if (filters?.status) {
+        where.status = filters.status;
+    }
+
+    if (filters?.paymentStatus) {
+        where.paymentStatus = filters.paymentStatus;
+    }
+
     return prismaClient.appointment.findMany({
-        where: { tenantId },
+        where,
         include: {
             service: true,
-            professional: true
+            professional: true,
+            paymentProof: true,
+            user: { select: { name: true } }
+        },
+        orderBy: {
+            date: 'asc'
         }
     });
 };
@@ -90,7 +121,8 @@ export const getAppointmentById = async (id: string, tenantId: string) => {
         where: { id, tenantId },
         include: {
             service: true,
-            professional: true
+            professional: true,
+            user: { select: { name: true } }
         }
     });
 };
@@ -201,4 +233,35 @@ export const rejectPayment = async (id: string, tenantId: string) => {
     }
 
     return updated;
+};
+
+export const uploadPaymentProof = async (appointmentId: string, tenantId: string, url: string) => {
+    const appointment = await prismaClient.appointment.findFirst({
+        where: { id: appointmentId, tenantId }
+    });
+
+    if (!appointment) {
+        throw new Error('Appointment not found');
+    }
+
+    return prismaClient.$transaction(async (tx) => {
+        // Create or Update Payment Proof
+        await tx.paymentProof.upsert({
+            where: { appointmentId },
+            update: { url },
+            create: {
+                appointmentId,
+                tenantId,
+                url
+            }
+        });
+
+        // Update Appointment Status
+        return tx.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                paymentStatus: 'PENDING_APPROVAL'
+            }
+        });
+    });
 };

@@ -6,10 +6,24 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/status-badge';
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
+interface Appointment {
+    id: string;
+    time: string;
+    clientName: string;
+    serviceName: string;
+    status: 'requested' | 'awaiting_payment' | 'awaiting_validation' | 'confirmed' | 'completed' | 'cancelled';
+}
+
 export default function EmployeeDashboard() {
-    const [appointments, setAppointments] = useState<any[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const userData = localStorage.getItem('user');

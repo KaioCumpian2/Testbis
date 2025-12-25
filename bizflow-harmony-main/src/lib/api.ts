@@ -39,35 +39,80 @@ export const getAvailability = async (tenantId: string, professionalId: string, 
     return response.data;
 };
 
+export const getPublicReviews = async (tenantId: string) => {
+    const response = await api.get(`/public/reviews?tenantId=${tenantId}`);
+    return response.data;
+};
+
+export const createPublicAppointment = async (data: any) => {
+    const response = await api.post(`/public/appointments`, data);
+    return response.data;
+};
+
+export const createPublicReview = async (data: any) => {
+    const response = await api.post(`/public/reviews`, data);
+    return response.data;
+};
+
+export const getPublicAppointmentsByPhone = async (tenantId: string, phone: string) => {
+    const response = await api.get(`/public/appointments`, {
+        params: { tenantId, phone }
+    });
+    return response.data;
+};
+
 // Admin / Secure Routes
 export const getFinancialSummary = async () => {
     const response = await api.get('/finance/summary');
     return response.data;
 };
 
+export const getDetailedReport = async (filters?: { startDate?: string, endDate?: string, professionalId?: string }) => {
+    const response = await api.get('/finance/report', { params: filters });
+    return response.data;
+};
+
 export const getTodayAppointments = async () => {
-    // Assuming backend has a filter or we fetch all and filter client side (MVP simplifiction: fetch all today)
-    // Actually, let's assume we have an appointments endpoint. If not, I'll need to create it.
-    // Checking previous context, I didn't verify an 'appointments' list endpoint. 
-    // I will use a generic /appointments endpoint and assume it exists or I will create it.
-    // For now let's try to hit /appointments?date=today
     const today = new Date().toISOString().split('T')[0];
     const response = await api.get(`/appointments?date=${today}`);
     return response.data;
 };
 
-export const getAppointmentsByDate = async (date: string) => {
-    const response = await api.get(`/appointments?date=${date}`);
+export const getMyAppointments = async () => {
+    const response = await api.get('/appointments');
     return response.data;
+};
+
+export const getAdminAppointments = async (filters: { date?: string, status?: string, paymentStatus?: string }) => {
+    const response = await api.get('/appointments', { params: filters });
+    return response.data;
+};
+
+export const getAppointmentsByDate = async (date: string) => {
+    return getAdminAppointments({ date });
 };
 
 export const getPendingPayments = async () => {
-    const response = await api.get('/appointments?status=awaiting_validation');
-    return response.data;
+    return getAdminAppointments({ paymentStatus: 'PENDING_APPROVAL' });
 };
 
 export const updateAppointmentStatus = async (id: string, status: string) => {
-    const response = await api.put(`/appointments/${id}/status`, { status });
+    const response = await api.put(`/appointments/${id}`, { status });
+    return response.data;
+};
+
+export const approvePayment = async (id: string) => {
+    const response = await api.post(`/appointments/${id}/approve-payment`);
+    return response.data;
+};
+
+export const rejectPayment = async (id: string) => {
+    const response = await api.post(`/appointments/${id}/reject-payment`);
+    return response.data;
+};
+
+export const getAdminTenantConfig = async () => {
+    const response = await api.get('/config');
     return response.data;
 };
 
@@ -115,5 +160,33 @@ export const updateProfessional = async (id: string, data: any) => {
 
 export const deleteProfessional = async (id: string) => {
     const response = await api.delete(`/professionals/${id}`);
+    return response.data;
+};
+
+// Reviews (Admin)
+export const getAdminReviews = async (filters?: { rating?: number, serviceId?: string }) => {
+    const response = await api.get('/reviews', { params: filters });
+    return response.data;
+};
+
+// Notifications
+export const getNotifications = async () => {
+    const response = await api.get('/notifications');
+    return response.data;
+};
+
+export const markNotificationsAsRead = async () => {
+    const response = await api.put('/notifications/read-all');
+    return response.data;
+};
+
+// Agent Config (Admin)
+export const getAgentConfigAdmin = async () => {
+    const response = await api.get('/config/agent');
+    return response.data;
+};
+
+export const updateAgentConfigAdmin = async (data: any) => {
+    const response = await api.put('/config/agent', data);
     return response.data;
 };

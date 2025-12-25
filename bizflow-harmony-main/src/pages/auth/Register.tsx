@@ -45,9 +45,9 @@ export default function Register() {
 
             const { user, tenant, token } = response.data;
 
-            // Store token (if we were auto-logging in, but maybe we just redirect to login for security or auto-login)
-            // For UX, let's auto-login or at least auto-redirect
-            localStorage.setItem('token', token); // Store auth token
+            // Store token and flag for newly created account tour
+            localStorage.setItem('token', token);
+            localStorage.setItem('hasSeenTour', 'false'); // Marcar que ainda não viu para forçar o tour agora
 
             toast.success('Conta criada com sucesso!', {
                 description: `Bem-vindo ao ${tenant.name}. Você será redirecionado.`

@@ -65,11 +65,11 @@ export default function Login() {
             <Card className="w-full max-w-md shadow-xl border-dashed">
                 <CardHeader className="space-y-1 text-center">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <span className="text-2xl font-bold text-primary">S</span>
+                        <span className="text-2xl font-bold text-primary">F</span>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Acessar Painel</CardTitle>
+                    <CardTitle className="text-2xl font-bold">FlowMaster</CardTitle>
                     <CardDescription>
-                        Entre com suas credenciais de administrador
+                        Acesse seu estabelecimento
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
